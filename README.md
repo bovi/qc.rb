@@ -1,4 +1,4 @@
 qc.rb
 =====
 
-QingCloud API Library to handle instances, networks, internetconnections, etc. on QingCloud.com
+QingCloud API Library to handle instances, networks, etc. on QingCloud.com
