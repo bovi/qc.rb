@@ -5,7 +5,7 @@ require 'json'
 require 'net/http'
 
 module QC
-  QC::CA_FILE = ca_file = File.join(File.dirname(__FILE__), "qingcloud.com.cert.pem")
+  QC::CERT_FILE = File.open(File.join(File.dirname(__FILE__), "qingcloud.com.cert.pem")).readlines.join
 
   def QC.hmac key, data
     hmac = OpenSSL::HMAC.digest(OpenSSL::Digest::Digest.new('sha256'), key, data)
@@ -17,21 +17,47 @@ module QC
     class Request
       attr_reader :response
 
-      def initialize action, key, access_key_id
+      def initialize access_key_id, action, extra_params = []
         @response = :not_requested
 
         @params = []
         @params << ['action', action]
         @params << ['access_key_id', access_key_id]
+        @params << ['signature_method', 'HmacSHA256']
+        @params << ['signature_version', 1]
+        extra_params.each {|i| @params << i}
       end
 
       def execute!(key)
-        @uri = URI.parse(API.json2url(key, @params.to_json))
-        https = Net::HTTP.new(@uri.host, 443)
-        https.use_ssl = true
-        https.verify_mode = OpenSSL::SSL::VERIFY_PEER
-        #https.ca_file = QC::CA_FILE
-        @response = https.request(Net::HTTP::Get.new(@uri.request_uri))
+        _p = @params.dup
+        _p << ['time_stamp', Time.now.utc.strftime("%FT%TZ")]
+        @uri = URI.parse(API.json2url(key, _p.to_json))
+
+        # Establish a SSL connection
+        Net::HTTP.start(@uri.host, 443,
+                        :use_ssl => true,
+                        :verify_mode  => OpenSSL::SSL::VERIFY_PEER) do |https|
+
+          # Verify additional the host name in the certificate to avoid MITM
+          unless OpenSSL::SSL.verify_certificate_identity(https.peer_cert, 'qingcloud.com')
+            raise 'Hostname in certifcate is invalid!i (MITM?)' 
+          end
+
+          # Verify the individual certificate
+          unless https.peer_cert.to_s == QC::CERT_FILE
+            raise "Certificate isn't trustworthy!"
+          end
+
+          ####################################################################
+          # Starting from this point I consider the SSL connection as safe!
+
+          @response = https.request(Net::HTTP::Get.new(@uri.request_uri))
+
+          # After this point we close the SSL connection.
+          ####################################################################
+        end
+
+        JSON.parse(@response.body)
       end
     end
 
@@ -51,6 +77,7 @@ module QC
       sign = json2sign(key, json)
       params = json2params(json)
       "https://api.qingcloud.com/iaas/?#{params}&signature=#{sign}"
+
     end
 
     private
