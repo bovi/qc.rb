@@ -1,10 +1,10 @@
 #!/usr/bin/env ruby
 
-require './lib/qc'
+require 'qc'
 
 def help_header cmd, options
   <<HEADER
-qc.rb (Version) is a QingCloud API CLI
+qc.rb (Version #{QC::VERSION}) is a QingCloud API CLI
 
 qc #{cmd}
 
