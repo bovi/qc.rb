@@ -104,12 +104,11 @@ module QC
     @identifier = 'Eip'
 
     def Eip.allocate p = {bandwidth: 1, eip_name: nil, count: 1, need_icp: nil, zone: nil}
-      req = QC::API::Request.new "AllocateEips", p
-      @result = req.execute!(QC::Key)
-      if @result['ret_code'] == 0
-        return @result['eips']
+      ret = API::Request.execute! 'AllocateEips', p
+      if ret.respond_to? :has_key?
+        ret['eips']
       else
-        return @result['ret_code']
+        false
       end
     end
 
@@ -118,13 +117,7 @@ module QC
         p = {}
         1.upto(eips.size).each { |i| p["eips.#{i}"] = eips[i-1] }
         p[:zone] = zone
-        req = QC::API::Request.new "ReleaseEips", p
-        @result = req.execute!(QC::Key)
-        if @result['ret_code'] == 0
-          true
-        else
-          return @result['ret_code']
-        end
+        API::Request.execute!('ReleaseEips', p)
       else
         false
       end
@@ -136,24 +129,12 @@ module QC
 
     def bandwidth= b
       p = {'eips.1' => @values['eip_id'], 'bandwidth' => b}
-      req = QC::API::Request.new "ChangeEipsBandwidth", p
-      @result = req.execute!(QC::Key)
-      if @result['ret_code'] == 0
-        b
-      else
-        return @result['ret_code']
-      end
+      API::Request.execute!('ChangeEipsBandwidth', p)
     end
 
     def release!
       p = {'eips.1' => @values['eip_id']}
-      req = QC::API::Request.new "ReleaseEips", p
-      @result = req.execute!(QC::Key)
-      if @result['ret_code'] == 0
-        true
-      else
-        return @result['ret_code']
-      end
+      API::Request.execute!('ReleaseEips', p)
     end
   end
 
@@ -164,6 +145,16 @@ module QC
   module API
     class Request
       attr_reader :response
+
+      def Request.execute! a, p = {}
+        req = QC::API::Request.new a, p
+        @result = req.execute!(QC::Key)
+        if @result['ret_code'] == 0
+          @result
+        else
+          @result['ret_code'].to_i
+        end
+      end
 
       def initialize action, extra_params = {}
         @response = :not_requested
