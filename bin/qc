@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require './lib/qc.rb'
+require "#{File.dirname(__FILE__)}/../lib/qc.rb"
 
 def help_header cmd, options
   <<HEADER
@@ -18,29 +18,29 @@ end
 case ARGV[0]
 when 'ssh'
   case ARGV[1]
-  when 'list'
+  when 'describe'
     QC::KeyPair.describe {|s| puts s}
   else
     puts help_header('ssh [option]', <<HELP)
-  list     List all public keys  
+  describe     List all public keys  
 HELP
   end
 when 'ins'
   case ARGV[1]
-  when 'list'
+  when 'describe'
     QC::Instance.describe {|i| puts i}
   else
     puts help_header('ins [option]', <<HELP)
-  list     List all machines 
+  describe     List all machines 
 HELP
   end
 when 'ip'
   case ARGV[1]
-  when 'list'
+  when 'describe'
     QC::Eip.describe {|s| puts s}
   else
     puts help_header('ssh [option]', <<HELP)
-  list     List all IPs  
+  describe     List all IPs  
 HELP
   end
 else

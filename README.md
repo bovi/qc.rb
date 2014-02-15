@@ -26,14 +26,14 @@ Get all public keys:
 CLI Version:
 
 ```bash
-qc ssh list
+qc ssh describe
 ```
 
 .rb Version:
 
 ```ruby
 # Each Public Key is available in *s*
-QC::SSH.each {|s| puts s}
+QC::KeyPair.describe {|s| puts s}
 ```
 
 #### Instances
@@ -43,12 +43,12 @@ Get all instances:
 CLI Version:
 
 ```bash
-qc ins list
+qc ins describe
 ```
 
 .rb Version:
 
 ```ruby
 # Each instance is available in *i*
-QC::Instance.each {|i| puts i}
+QC::Instance.describe {|i| puts i}
 ```
