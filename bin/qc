@@ -16,6 +16,15 @@ HEADER
 end
 
 case ARGV[0]
+when 'vol'
+  case ARGV[1]
+  when 'describe'
+    QC::Volume.describe {|v| puts v}
+  else
+    puts help_header('vol [option]', <<HELP)
+  describe     List all volumes
+HELP
+  end
 when 'ssh'
   case ARGV[1]
   when 'describe'
@@ -39,7 +48,7 @@ when 'ip'
   when 'describe'
     QC::Eip.describe {|s| puts s}
   else
-    puts help_header('ssh [option]', <<HELP)
+    puts help_header('ip [option]', <<HELP)
   describe     List all IPs  
 HELP
   end
