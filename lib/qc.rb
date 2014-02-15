@@ -3,9 +3,50 @@ require 'Base64'
 require 'cgi'
 require 'json'
 require 'net/http'
+require 'yaml'
+require 'fileutils'
 
 module QC
+  def QC.load_config key
+    f = File.expand_path('~/.qingcloud/config.yaml')
+    if File.exists? f
+      config = YAML.load(File.open(f))
+      if config.has_key? key
+        config[key]
+      else
+        raise "'#{key}' is missing in configuration file"
+      end
+    else
+      puts "'#{f}' doesn't exist!"
+      print "Do you want to create it? (Y/n)"
+      a = $stdin.gets.strip
+      if a == 'n'
+        puts "No configuration file!"
+        exit
+      elsif a.downcase == 'y' or a == ''
+        h = {}
+        print 'Secret Key:'
+        h['qy_secret_access_key'] = $stdin.gets.strip
+        print 'Access Key ID:'
+        h['qy_access_key_id'] = $stdin.gets.strip
+        print 'Zone:'
+        h['zone'] = $stdin.gets.strip
+        begin
+          FileUtils.mkdir_p(File.dirname(f))
+          File.new(f, 'w+').puts YAML.dump(h)
+          puts "Configuration file was created!"
+        rescue Exception => e
+          raise "Configuration file couldn't be created! (#{e.class}: #{e.message})"
+        end
+        exit
+      end
+    end
+  end
+
   QC::CERT_FILE = File.open(File.join(File.dirname(__FILE__), "qingcloud.com.cert.pem")).readlines.join
+  QC::Key = QC.load_config('qy_secret_access_key')
+  QC::AccessKeyId = QC.load_config('qy_access_key_id')
+  QC::Zone = QC.load_config('zone')
 
   def QC.hmac key, data
     hmac = OpenSSL::HMAC.digest(OpenSSL::Digest::Digest.new('sha256'), key, data)
@@ -17,14 +58,15 @@ module QC
     class Request
       attr_reader :response
 
-      def initialize access_key_id, action, extra_params = []
+      def initialize action, extra_params = []
         @response = :not_requested
 
         @params = []
         @params << ['action', action]
-        @params << ['access_key_id', access_key_id]
+        @params << ['access_key_id', QC::AccessKeyId]
         @params << ['signature_method', 'HmacSHA256']
         @params << ['signature_version', 1]
+        @params << ['zone', QC::Zone]
         extra_params.each {|i| @params << i}
       end
 
