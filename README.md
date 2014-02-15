@@ -7,7 +7,7 @@ QingCloud API Library to handle instances, networks, etc. on QingCloud.com
 
 You can install *qc.rb* via RubyGems:
 
-```
+```bash
 gem install qc.rb
 ```
 
@@ -25,13 +25,13 @@ Get all public keys:
 
 CLI Version:
 
-```
+```bash
 qc ssh list
 ```
 
 .rb Version:
 
-```
+```ruby
 # Each Public Key is available in *s*
 QC::SSH.each {|s| puts s}
 ```
@@ -42,13 +42,13 @@ Get all instances:
 
 CLI Version:
 
-```
+```bash
 qc ins list
 ```
 
 .rb Version:
 
-```
+```ruby
 # Each instance is available in *i*
 QC::Instance.each {|i| puts i}
 ```
