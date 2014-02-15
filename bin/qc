@@ -19,23 +19,19 @@ case ARGV[0]
 when 'ssh'
   case ARGV[1]
   when 'list'
-    r = QC::API::Request.new 'DescribeKeyPairs'
-    r.execute!(QC::Key)['keypair_set'].to_a.each do |k|
-      puts <<KEYS
-ID:                "#{k['keypair_id']}"
-Name:              "#{k['keypair_name']}"
-Creation Date:     "#{k['create_time']}"
-Encryption Method: "#{k["encrypt_method"]}"
-Description:
-"#{k['description']}"
-Public Key:
-"#{k['pub_key']}"
-
-KEYS
-    end
+    QC::SSH.each {|s| puts s}
   else
     puts help_header('ssh [option]', <<HELP)
   list     List all public keys  
+HELP
+  end
+when 'ins'
+  case ARGV[1]
+  when 'list'
+    QC::Instance.each {|s| puts s}
+  else
+    puts help_header('ins [option]', <<HELP)
+  list     List all machines 
 HELP
   end
 else

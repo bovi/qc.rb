@@ -54,6 +54,61 @@ module QC
     url_b64_hmac = CGI.escape(b64_hmac)
   end
 
+  class SSH
+    def initialize s
+      @id = s['keypair_id']
+      @name = s['keypair_name']
+      @date = s['create_time']
+      @e_method = s['encrypt_method']
+      @desc = s['description']
+      @key = s['pub_key']
+    end
+
+    def to_s
+      <<STR
+ID:                "#{@id}"
+Name:              "#{@name}"
+Creation Date:     "#{@date}"
+Encryption Method: "#{@e_method}"
+Description:       "#{@desc}"
+Public Key:
+"#{@key}"
+STR
+    end
+
+    def SSH.each &block
+      r = QC::API::Request.new 'DescribeKeyPairs'
+      r.execute!(QC::Key)['keypair_set'].to_a.each {|s| block.call(SSH.new(s))}
+    end
+  end
+
+  class Instance
+    def initialize s
+      @id = s['instance_id']
+      @name = s['instance_name']
+      @type = s['instance_type']
+      @vcpu = s['vcpu_current']
+      @desc = s['description']
+      @status = s['status']
+    end
+
+    def to_s
+      <<STR
+ID:                "#{@id}"
+Name:              "#{@name}"
+Type:              "#{@type}"
+VCPU:              "#{@vcpu}"
+Description:       "#{@desc}"
+Status:            "#{@status}"
+STR
+    end
+
+    def Instance.each &block
+      r = QC::API::Request.new 'DescribeInstances'
+      r.execute!(QC::Key)['instance_set'].to_a.each {|s| block.call(Instance.new(s))}
+    end
+  end
+
   module API
     class Request
       attr_reader :response
@@ -82,12 +137,12 @@ module QC
 
           # Verify additional the host name in the certificate to avoid MITM
           unless OpenSSL::SSL.verify_certificate_identity(https.peer_cert, 'qingcloud.com')
-            raise 'Hostname in certifcate is invalid!i (MITM?)' 
+            raise 'Hostname in certifcate does NOT match! (MITM?)' 
           end
 
           # Verify the individual certificate
           unless https.peer_cert.to_s == QC::CERT_FILE
-            raise "Certificate isn't trustworthy!"
+            raise "Certificate is NOT trustworthy!"
           end
 
           ####################################################################
@@ -119,7 +174,6 @@ module QC
       sign = json2sign(key, json)
       params = json2params(json)
       "https://api.qingcloud.com/iaas/?#{params}&signature=#{sign}"
-
     end
 
     private
