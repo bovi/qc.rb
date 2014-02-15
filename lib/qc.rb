@@ -7,7 +7,7 @@ require 'yaml'
 require 'fileutils'
 
 module QC
-  VERSION = '0.0.1'
+  VERSION = '0.0.2'
 
   def QC.load_config key
     f = File.expand_path('~/.qingcloud/config.yaml')
