@@ -94,6 +94,24 @@ module QC
 
   class Instance < DataType
     @identifier = 'Instance'
+
+    def Instance.run p = {image_id: 'precisex64a', instance_name: nil, count: 1, login_mode: 'keypair',
+                          login_keypair: nil, login_passwd: nil, security_group: nil, zone: nil, instance_type: 'small_b'}
+      p[:image_id] = 'precisex64a' if p[:image_id].nil?
+      p[:login_mode] = 'keypair' if p[:login_mode].nil?
+      p[:instance_type] = 'small_b' if p[:instance_type].nil?
+      ret = API::Request.execute! 'RunInstances', p
+      ret['instances']
+    end
+
+    def Instance.load instance_id
+      Instance.describe('instances.1' => instance_id)[0]
+    end
+
+    def terminate!
+      p = {'instances.1' => @values['instance_id']}
+      API::Request.execute!('TerminateInstances', p)
+    end
   end
 
   class Volume < DataType
@@ -129,7 +147,12 @@ module QC
 
     def bandwidth= b
       p = {'eips.1' => @values['eip_id'], 'bandwidth' => b}
-      API::Request.execute!('ChangeEipsBandwidth', p)
+      ret = API::Request.execute!('ChangeEipsBandwidth', p)
+      if ret.respond_to? :has_key?
+        b
+      else
+        false
+      end
     end
 
     def release!
@@ -139,7 +162,24 @@ module QC
   end
 
   class Image < DataType
+    include Comparable
     @identifier = 'Image'
+
+    def Image.describe p = {}, &block
+      _p = p.dup
+      unless _p.has_key? 'provider'
+        _p['provider'] = 'system'
+      end
+      super _p, &block
+    end
+
+    def to_s
+      [@values['image_id'], @values['image_name']].to_yaml
+    end
+
+    def <=> o
+      @values['image_id'] <=> o.image_id
+    end
   end
 
   module API
@@ -152,7 +192,7 @@ module QC
         if @result['ret_code'] == 0
           @result
         else
-          @result['ret_code'].to_i
+          raise ArgumentError.new("#{@result['ret_code']}: #{@result['message']}")
         end
       end
 

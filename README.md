@@ -53,6 +53,19 @@ qc ins describe
 QC::Instance.describe {|i| puts i}
 ```
 
+Create new Instance:
+
+```ruby
+QC::Instance.run instance_name: 'NameOfInstance', login_keypair: 'kp-sadasd67' # => instance_id
+```
+
+Delete Instance:
+
+```ruby
+i = QC::Instance.load 'i-adssad7'
+i.terminate! # => {"action"=>"TerminateInstancesResponse", "job_id"=>"j-asd7djk", "ret_code"=>0}
+```
+
 #### IPs
 
 Get all IPs:
