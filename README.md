@@ -66,6 +66,13 @@ i = QC::Instance.load 'i-adssad7'
 i.terminate! # => {"action"=>"TerminateInstancesResponse", "job_id"=>"j-asd7djk", "ret_code"=>0}
 ```
 
+Add IP device to Instance:
+
+```ruby
+i = QC::Instance.load 'i-adssad7'
+i.ip = 'eip-sadjkdsa7'  # => 'eip-sadjkdsa7'
+```
+
 #### IPs
 
 Get all IPs:

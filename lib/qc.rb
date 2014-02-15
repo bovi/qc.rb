@@ -100,6 +100,7 @@ module QC
       p[:image_id] = 'precisex64a' if p[:image_id].nil?
       p[:login_mode] = 'keypair' if p[:login_mode].nil?
       p[:instance_type] = 'small_b' if p[:instance_type].nil?
+      p['vxnets.1'] = 'vxnet-0' if p['vxnets.1'].nil?
       ret = API::Request.execute! 'RunInstances', p
       ret['instances']
     end
@@ -111,6 +112,11 @@ module QC
     def terminate!
       p = {'instances.1' => @values['instance_id']}
       API::Request.execute!('TerminateInstances', p)
+    end
+
+    def ip= eip_id
+      p = {'instance' => @values['instance_id'], 'eip' => eip_id}
+      API::Request.execute!('AssociateEip', p)
     end
   end
 
