@@ -57,7 +57,9 @@ module QC
   end
 
   class DataType
-    @identifier = self.class.name
+    attr_reader :result
+
+    @identifier = 'NOT_IMPLEMENTED'
 
     def initialize h
       @values = h
@@ -75,9 +77,14 @@ module QC
       end
     end
 
-    def self.describe &block
-      r = QC::API::Request.new "Describe#{@identifier}s"
-      r.execute!(QC::Key)["#{@identifier.downcase}_set"].to_a.each {|s| block.call(self.new(s))}
+    def self.describe p = {}, &block
+      req = QC::API::Request.new "Describe#{@identifier}s", p
+      @result = req.execute!(QC::Key)
+      if block_given?
+        @result["#{@identifier.downcase}_set"].to_a.each {|s| block.call(self.new(s))}
+      else
+        @result["#{@identifier.downcase}_set"].to_a.map {|s| self.new(s)}
+      end
     end
   end
 
@@ -95,13 +102,70 @@ module QC
 
   class Eip < DataType
     @identifier = 'Eip'
+
+    def Eip.allocate p = {bandwidth: 1, eip_name: nil, count: 1, need_icp: nil, zone: nil}
+      req = QC::API::Request.new "AllocateEips", p
+      @result = req.execute!(QC::Key)
+      if @result['ret_code'] == 0
+        return @result['eips']
+      else
+        return @result['ret_code']
+      end
+    end
+
+    def Eip.release eips: [], zone: nil
+      if eips.size > 0
+        p = {}
+        1.upto(eips.size).each { |i| p["eips.#{i}"] = eips[i-1] }
+        p[:zone] = zone
+        req = QC::API::Request.new "ReleaseEips", p
+        @result = req.execute!(QC::Key)
+        if @result['ret_code'] == 0
+          true
+        else
+          return @result['ret_code']
+        end
+      else
+        false
+      end
+    end
+
+    def Eip.load eip_id
+      Eip.describe('eips.1' => eip_id)[0]
+    end
+
+    def bandwidth= b
+      p = {'eips.1' => @values['eip_id'], 'bandwidth' => b}
+      req = QC::API::Request.new "ChangeEipsBandwidth", p
+      @result = req.execute!(QC::Key)
+      if @result['ret_code'] == 0
+        b
+      else
+        return @result['ret_code']
+      end
+    end
+
+    def release!
+      p = {'eips.1' => @values['eip_id']}
+      req = QC::API::Request.new "ReleaseEips", p
+      @result = req.execute!(QC::Key)
+      if @result['ret_code'] == 0
+        true
+      else
+        return @result['ret_code']
+      end
+    end
+  end
+
+  class Image < DataType
+    @identifier = 'Image'
   end
 
   module API
     class Request
       attr_reader :response
 
-      def initialize action, extra_params = []
+      def initialize action, extra_params = {}
         @response = :not_requested
 
         @params = []
@@ -109,8 +173,13 @@ module QC
         @params << ['access_key_id', QC::AccessKeyId]
         @params << ['signature_method', 'HmacSHA256']
         @params << ['signature_version', 1]
-        @params << ['zone', QC::Zone]
-        extra_params.each {|i| @params << i}
+        zone_set = false
+        extra_params.each_pair do |k,v|
+          zone_set = true if k == 'zone'
+          next if v.nil?
+          @params << [k.to_s, v]
+        end
+        @params << ['zone', QC::Zone] unless zone_set
       end
 
       def execute!(key)

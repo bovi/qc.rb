@@ -70,6 +70,28 @@ qc ip describe
 QC::Eip.describe {|i| puts i}
 ```
 
+Allocate new IP:
+
+```ruby
+# Create IP width bandwidth 3MB
+Eip.allocate bandwidth: 3   # => eip_id
+```
+
+Release IP:
+
+```ruby
+# Release IP with ID 'eip-12djpg8q'
+Eip.load('eip-12djpg8q').release!   # => true | false
+```
+
+Change Bandwidth:
+
+```ruby
+# Change bandwidth of IP with ID 'eip-12djpg8q' to 2MB
+ip = Eip.load('eip-12djpg8q')
+ip.bandwidth = 2     # => 2
+```
+
 #### Volumes
 
 Get all Volumes:
