@@ -52,6 +52,17 @@ when 'ip'
   describe     List all IPs  
 HELP
   end
+
+when 'img'
+  case ARGV[1]
+  when 'describe'
+    QC::Image.describe {|s| puts s}
+  else
+    puts help_header('img [option]', <<HELP)
+  describe     List all Images
+HELP
+  end
+
 else
   puts help_header('[option]', <<HELP)
   ssh      SSH Key Management
