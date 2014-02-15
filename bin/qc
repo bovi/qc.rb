@@ -56,7 +56,7 @@ HELP
 when 'img'
   case ARGV[1]
   when 'describe'
-    QC::Image.describe {|s| puts s}
+    QC::Image.describe.sort.each {|s| puts s}
   else
     puts help_header('img [option]', <<HELP)
   describe     List all Images
