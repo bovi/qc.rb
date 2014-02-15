@@ -52,3 +52,37 @@ qc ins describe
 # Each instance is available in *i*
 QC::Instance.describe {|i| puts i}
 ```
+
+#### IPs
+
+Get all IPs:
+
+CLI Version:
+
+```bash
+qc ip describe
+```
+
+.rb Version:
+
+```ruby
+# Each IP is available in *i*
+QC::Eip.describe {|i| puts i}
+```
+
+#### Volumes
+
+Get all Volumes:
+
+CLI Version:
+
+```bash
+qc vol describe
+```
+
+.rb Version:
+
+```ruby
+# Each Volume is available in *v*
+QC::Volume.describe {|v| puts v}
+```
