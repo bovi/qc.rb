@@ -56,59 +56,45 @@ module QC
     url_b64_hmac = CGI.escape(b64_hmac)
   end
 
-  class SSH
-    def initialize s
-      @id = s['keypair_id']
-      @name = s['keypair_name']
-      @date = s['create_time']
-      @e_method = s['encrypt_method']
-      @desc = s['description']
-      @key = s['pub_key']
+  class DataType
+    @identifier = self.class.name
+
+    def initialize h
+      @values = h
     end
 
     def to_s
-      <<STR
-ID:                "#{@id}"
-Name:              "#{@name}"
-Creation Date:     "#{@date}"
-Encryption Method: "#{@e_method}"
-Description:       "#{@desc}"
-Public Key:
-"#{@key}"
-STR
+      @values.to_yaml
     end
 
-    def SSH.each &block
-      r = QC::API::Request.new 'DescribeKeyPairs'
-      r.execute!(QC::Key)['keypair_set'].to_a.each {|s| block.call(SSH.new(s))}
+    def method_missing met
+      if @values.has_key? met.to_s
+        @values[met.to_s]
+      else
+        raise NoMethodError.new "undefined method `#{met}'"
+      end
+    end
+
+    def self.describe &block
+      r = QC::API::Request.new "Describe#{@identifier}s"
+      r.execute!(QC::Key)["#{@identifier.downcase}_set"].to_a.each {|s| block.call(self.new(s))}
     end
   end
 
-  class Instance
-    def initialize s
-      @id = s['instance_id']
-      @name = s['instance_name']
-      @type = s['instance_type']
-      @vcpu = s['vcpu_current']
-      @desc = s['description']
-      @status = s['status']
-    end
+  class KeyPair < DataType
+    @identifier = 'KeyPair'
+  end
 
-    def to_s
-      <<STR
-ID:                "#{@id}"
-Name:              "#{@name}"
-Type:              "#{@type}"
-VCPU:              "#{@vcpu}"
-Description:       "#{@desc}"
-Status:            "#{@status}"
-STR
-    end
+  class Instance < DataType
+    @identifier = 'Instance'
+  end
 
-    def Instance.each &block
-      r = QC::API::Request.new 'DescribeInstances'
-      r.execute!(QC::Key)['instance_set'].to_a.each {|s| block.call(Instance.new(s))}
-    end
+  class Volume < DataType
+    @identifier = 'Volume'
+  end
+
+  class Eip < DataType
+    @identifier = 'Eip'
   end
 
   module API
