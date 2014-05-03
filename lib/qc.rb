@@ -7,7 +7,7 @@ require 'yaml'
 require 'fileutils'
 
 module QC
-  VERSION = '0.0.3'
+  VERSION = '0.0.4'
 
   def QC.load_config key
     f = File.expand_path('~/.qingcloud/config.yaml')
@@ -69,7 +69,7 @@ module QC
       @values.to_yaml
     end
 
-    def method_missing met
+    def method_missing met, *args, &block
       if @values.has_key? met.to_s
         @values[met.to_s]
       else
@@ -117,6 +117,11 @@ module QC
     def ip= eip_id
       p = {'instance' => @values['instance_id'], 'eip' => eip_id}
       API::Request.execute!('AssociateEip', p)
+    end
+
+    def add_keypair kp_id
+      p = {'instances.n1' => @values['instance_id'], 'keypairs.1' => kp_id}
+      API::Request.execute!('AttachKeyPairs', p)
     end
   end
 
