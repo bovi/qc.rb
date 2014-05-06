@@ -73,6 +73,13 @@ i = QC::Instance.load 'i-adssad7'
 i.ip = 'eip-sadjkdsa7'  # => 'eip-sadjkdsa7'
 ```
 
+Add Key Pair to Instance
+
+```ruby
+i = QC::Instance.load 'i-adssad7'
+i.add_keypair 'kp-2hadqpv3'  # => 'kp-2hadqpv3'
+```
+
 #### IPs
 
 Get all IPs:
