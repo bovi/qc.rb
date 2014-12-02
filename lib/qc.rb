@@ -7,7 +7,7 @@ require 'yaml'
 require 'fileutils'
 
 module QC
-  VERSION = '0.0.7'
+  VERSION = '0.0.8'
 
   def QC.load_config key
     f = File.expand_path('~/.qingcloud/config.yaml')
@@ -51,7 +51,7 @@ module QC
   QC::Zone = QC.load_config('zone')
 
   def QC.hmac key, data
-    hmac = OpenSSL::HMAC.digest(OpenSSL::Digest::Digest.new('sha256'), key, data)
+    hmac = OpenSSL::HMAC.digest(OpenSSL::Digest.new('sha256'), key, data)
     b64_hmac = Base64.encode64(hmac).strip
     url_b64_hmac = CGI.escape(b64_hmac)
   end
