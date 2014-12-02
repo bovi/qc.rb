@@ -7,7 +7,7 @@ require 'yaml'
 require 'fileutils'
 
 module QC
-  VERSION = '0.0.6'
+  VERSION = '0.0.7'
 
   def QC.load_config key
     f = File.expand_path('~/.qingcloud/config.yaml')
@@ -93,7 +93,7 @@ module QC
   end
 
   class Instance < DataType
-    DEFAULT_IMAGE_ID = 'trustysrvx64a'
+    DEFAULT_IMAGE_ID = 'trustysrvx64c'
     @identifier = 'Instance'
 
     def Instance.run p = {image_id: DEFAULT_IMAGE_ID, instance_name: nil, count: 1, login_mode: 'keypair',
