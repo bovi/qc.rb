@@ -93,7 +93,7 @@ module QC
   end
 
   class Instance < DataType
-    DEFAULT_IMAGE_ID = 'trustysrvx64e'
+    DEFAULT_IMAGE_ID = 'xenialx64'
     @identifier = 'Instance'
 
     def Instance.run p = {image_id: DEFAULT_IMAGE_ID, instance_name: nil, count: 1, login_mode: 'keypair',
