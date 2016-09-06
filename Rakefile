@@ -3,8 +3,8 @@ require 'rake/testtask'
 
 spec = Gem::Specification.new do |s|
   s.name         = 'qc.rb'
-  s.version      = '0.0.9'
-  s.date         = '2016-05-31'
+  s.version      = '0.0.10'
+  s.date         = '2016-09-06'
   s.summary      = "QingCloud API Library"
   s.description  = "QingCloud API Library to handle instances, networks, internetconnections, etc. on QingCloud.com"
   s.authors      = ["Daniel Bovensiepen"]
